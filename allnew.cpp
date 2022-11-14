@@ -1,14 +1,15 @@
-#ifndef _BASE64_H_
-#define _BASE64_H_
 #include <vector>
 #include <string>
 #include <fstream>
+#include <time.h>
+#include <iostream>
+std::string line = "";
+std::string temp_input;
 std::string Bufferen, Bufferde;
+std::string history[1001][3];
 typedef unsigned char BYTE;
 std::string base64_encode(BYTE const *buf, unsigned int bufLen);
 std::vector<BYTE> base64_decode(std::string const &);
-#endif
-#include <iostream>
 static const std::string base64_chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz"
@@ -106,8 +107,13 @@ std::vector<BYTE> base64_decode(std::string const &encoded_string)
 
   return ret;
 }
-void encode();
+void encode(std::string sstr, int con);
+void draw();
+void history_remove();
 void openfile();
+void dis_history();
+void openfile_list();
+void wirtefile();
 void openfile()
 {
   std::ifstream file;
@@ -121,7 +127,15 @@ void openfile()
   }
   file.close();
 }
-void wirtefile();
+void wirtefile_list();
+void list();
+void draw()
+{
+  for (int l = 0; l < 50; l++)
+  {
+    line += "*";
+  }
+}
 void wirtefile()
 {
   std::ofstream file;
@@ -132,86 +146,265 @@ void wirtefile()
   }
   file.close();
 }
-void encode(std::string sstr)
+void encode(std::string sstr, int con)
 {
   std::string str = "";
   str = sstr;
   std::string enreal = sstr;
   std::string encoded = base64_encode((const unsigned char *)str.c_str(), str.length());
   std::vector<BYTE> decoded = base64_decode(enreal);
-  std::cout << "Encoded: " << encoded << std::endl;
-  Bufferen = encoded;
-  std::cout << "Decoded: " << std::string(decoded.begin(), decoded.end()) << std::endl;
-  Bufferde = std::string(decoded.begin(), decoded.end());
+  if (con == 1)
+  {
+    std::cout << "Encoded: " << encoded << std::endl;
+    Bufferen = encoded;
+    int l = 0;
+    while (history[l][0] != history[1000][0])
+    {
+      l++;
+    }
+    history[l][0] = temp_input;
+    history[l][1] = str;
+    history[l][2] = encoded;
+  }
+  else if (con == 2)
+  {
+    std::cout << "Decoded: " << std::string(decoded.begin(), decoded.end()) << std::endl;
+    Bufferde = std::string(decoded.begin(), decoded.end());
+  }
 }
-
+void openfile_list()
+{
+  std::ifstream file;
+  file.open("history.txt");
+  int loop = 0;
+  while (!file.eof())
+  {
+    std::getline(file, history[loop][0]);
+    std::getline(file, history[loop][1]);
+    std::getline(file, history[loop][2]);
+    loop++;
+  }
+  file.close();
+}
+void wirtefile_list()
+{
+  std::ofstream file;
+  file.open("history.txt");
+  for (int l = 0; history[l][0] != ""; l++)
+  {
+    file << history[l][0] << std::endl
+         << history[l][1] << std::endl
+         << history[l][2] << std::endl;
+  }
+  file.close();
+}
+void history_remove()
+{
+  int his = 1;
+  int start_page = 1;
+  while (his == 1)
+  {
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+    std::cout << "History: " << std::endl
+              << std::endl;
+    int i = 0;
+    while (history[i][0] != "")
+    {
+      i++;
+    }
+    int end_page = i / 5;
+    if (end_page == 0)
+      end_page = 1;
+    std::cout << "page " << start_page << " of " << end_page << std::endl;
+    int le = start_page * 5;
+    for (int l = (start_page * 5) - 5; l <= le; l++)
+    {
+      std::cout << line << " . " << l + 1 << " . " << line << std::endl;
+      std::cout << "Raw String : " << history[l][0] << std::endl;
+      std::cout << "Morse code : " << history[l][1] << std::endl;
+      std::cout << "Base64 encode : " << history[l][2] << std::endl;
+      std::cout << line << "*******" << line << std::endl
+                << std::endl;
+    }
+    std::string rm_input;
+    std::cout << "Typeing Number for select page \" Ex. 3 \" "<<std::endl<<"Typeing character 'd' before number for remove list \" Ex. d2 \" " << std::endl;
+    std::cout << "Typeing 'q' for exit" << std::endl;
+    std::cout << "Enter Command : ";
+    std::cin >> rm_input;
+    if(rm_input[0] == 'q')
+    {
+      his = 0;
+    }
+    else if (rm_input[0] == 'd')
+    {
+      int rm_position = std::stoi(rm_input.substr(1, rm_input.length()));
+      for (int l = rm_position - 1; l < 1000; l++)
+      {
+        history[l][0] = history[l + 1][0];
+        history[l][1] = history[l + 1][1];
+        history[l][2] = history[l + 1][2];
+      }
+      wirtefile_list();
+      //wait
+    }
+    else if (rm_input[0] == '1' || rm_input[0] == '2' || rm_input[0] == '3' || rm_input[0] == '4' || rm_input[0] == '5' || rm_input[0] == '6' || rm_input[0] == '7' || rm_input[0] == '8' || rm_input[0] == '9' || rm_input[0] == '0')
+    {
+      start_page = std::stoi(rm_input);
+    }
+  }
+}
+void dis_history()
+{
+  int his = 1;
+  int start_page = 1;
+  while (his == 1)
+  {
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+    std::cout << "History: " << std::endl
+              << std::endl;
+    int i = 0;
+    while (history[i][0] != "")
+    {
+      i++;
+    }
+    int end_page = i / 5;
+    if (end_page == 0)
+      end_page = 1;
+    std::cout << "page " << start_page << " of " << end_page << std::endl;
+    int le = start_page * 5;
+    for (int l = (start_page * 5) - 5; l <= le; l++)
+    {
+      std::cout << line << " . " << l + 1 << " . " << line << std::endl;
+      std::cout << "Raw String : " << history[l][0] << std::endl;
+      std::cout << "Morse code : " << history[l][1] << std::endl;
+      std::cout << "Base64 encode : " << history[l][2] << std::endl;
+      std::cout << line << "*******" << line << std::endl
+                << std::endl;
+    }
+    std::cout << "Enter page number to go to page Enter 0 to exit" << std::endl;
+    std::cin >> start_page;
+    if (start_page == 0)
+    {
+      //edit charactor exit
+      his = 0;
+    }
+  }
+}
 int main()
 {
-  std::string morseCode[26] = {".-", "-...", "-.-.", "-..", ".", "..-.", "--.", "....", "..", ".---", "-.-", ".-..", "--", "-.", "---", ".--.", "--.-", ".-.", "...", "-", "..-", "...-", ".--", "-..-", "-.--", "--.."};
-  char alphabet[26] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
-  std::string input;
-  std::string output;
-  int choice;
-  std::cout << "1. Text to morse code" << std::endl;
-  std::cout << "2. Morse code to text" << std::endl;
-  std::cout << "Enter your choice: ";
-  std::cin >> choice;
-  if (choice == 1)
+  openfile_list();
+  draw();
+  std::string morseCode[27] = {"_", ".-", "-...", "-.-.", "-..", ".", "..-.", "--.", "....", "..", ".---", "-.-", ".-..", "--", "-.", "---", ".--.", "--.-", ".-.", "...", "-", "..-", "...-", ".--", "-..-", "-.--", "--.."};
+  char alphabet[27] = {' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+  int dw = 1;
+  while (dw == 1)
   {
-    std::cout << "Enter a word to convert to morse code: ";
-    std::cin >> input;
-    for (int i = 0; i < input.length(); i++)
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+    std::string input;
+    std::string output;
+    int choice;
+    std::cout << line << std::endl;
+    std::cout << "1. Text to morse code" << std::endl;
+    std::cout << "2. Morse code to text" << std::endl;
+    std::cout << "3. History Encode" << std::endl;
+    std::cout << "4. History Remove" << std::endl;
+    std::cout << "5. Exit" << std::endl;
+    std::cout << line << std::endl;
+    std::cout << "Enter your choice: ";
+    std::cin >> choice;
+    if (choice == 1)
     {
-      for (int j = 0; j < 26; j++)
+      std::cout << "Enter a word to convert to morse code: ";
+      std::getline(std::cin >> std::ws, input);
+      temp_input = input;
+      for (int i = 0; i < input.length(); i++)
       {
-        if (input[i] == alphabet[j])
+        for (int j = 0; j < 27; j++)
         {
-          output += morseCode[j];
-          output += " ";
+          if (input[i] == alphabet[j])
+          {
+            output += morseCode[j];
+            output += " ";
+          }
         }
       }
+      output += "";
+      std::cout << output << std::endl;
+      encode(output, 1);
+      wirtefile();
+      wirtefile_list();
+      std::cout << "Press enter to continue...";
+      std::cin.ignore();
+      std::cin.ignore();
     }
-    output += "";
-    std::cout << output << std::endl;
-    encode(output);
-    wirtefile();
-  }
-  else if (choice == 2)
-  {
-    openfile();
-    encode(Bufferde);
-    std::string input[1000];
-    std::string output;
-    std::cout << "input morse code: ";
-    int loop = 0, loopin = 0;
-    while (loop <= Bufferde.length())
+    else if (choice == 2)
     {
-      if (Bufferde[loop] == ' ')
+      openfile();
+      encode(Bufferde, 2);
+      std::string input[1000];
+      std::string output;
+      std::cout << "input morse code: ";
+      int loop = 0, loopin = 0;
+      while (loop <= Bufferde.length())
       {
-        loopin++;
+        if (Bufferde[loop] == ' ')
+        {
+          loopin++;
+          loop++;
+        }
+        input[loopin] += Bufferde[loop];
+        if (input[loopin] == input[999])
+        {
+          break;
+        }
         loop++;
       }
-      input[loopin] += Bufferde[loop];
-      if (input[loopin] == input[999])
+      for (int i = 0; i < 100; i++)
       {
-        break;
-      }
-      loop++;
-    }
-    for (int i = 0; i < 100; i++)
-    {
-      for (int j = 0; j < 26; j++)
-      {
-        if (input[i] == morseCode[j])
+        for (int j = 0; j < 27; j++)
         {
-          std::cout << alphabet[j];
+          if (input[i] == morseCode[j])
+          {
+            std::cout << alphabet[j];
+          }
         }
       }
+      std::cout << std::endl;
+      std::cout << "Press enter to continue...";
+      std::cin.ignore();
+      std::cin.ignore();
     }
-  }
-  else
-  {
-    std::cout << "Invalid choice" << std::endl;
+    else if (choice == 3)
+    {
+      dis_history();
+      std::cout << "Press enter to continue...";
+      std::cin.ignore();
+      std::cin.ignore();
+    }
+    else if (choice == 4)
+    {
+      history_remove();
+    }
+    else if (choice == 5)
+    {
+      dw = 0;
+    }
+    else
+    {
+      std::cout << "Invalid choice" << std::endl;
+    }
   }
   return 0;
 }
