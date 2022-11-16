@@ -1,37 +1,203 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <windows.h>
+#include <fstream>
 using namespace std;
+string list[1000][3];
 string dis[400][10];
 string input_text;
 string morse_done;
+int position = 1;
+void file_maker();
+void file_writer();
 void display(int control);
 void dis_line();
 void dis_hader();
 void dis_main();
+void dis_draw_list_manu();
 void dis_draw_add_manu();
 void dis_draw_main_manu();
 void dis_draw_add_confirm(string input_text, string morse_done);
 void dis_clear();
-void dis_player_morse(string morse_done);
+void dis_draw_select();
+void dis_player_morse(string morse_done, int control_command);
+void wirte_list_array(string input_text, string morse_done);
 void cls_add_varible();
 void input(int control_input);
 int main()
 {
+    file_maker();
     display(1);
     return 0;
 }
+void dis_draw_select()
+{
+    dis[1][1] = "     " + input_text;
+    dis[2][1] = "                    ^ Text ^";
+    dis[10][0] = "                                          ^ Morse Code ^";
+    if (morse_done.length() > 80 && morse_done.length() <= 160)
+    {
+        dis[2][0] = "        " + morse_done.substr(0, 80) + ">";
+        dis[3][0] = "        " + morse_done.substr(80, morse_done.length());
+    }
+    else if (morse_done.length() > 160 && morse_done.length() <= 240)
+    {
+        dis[2][0] = "        " + morse_done.substr(0, 80) + ">";
+        dis[3][0] = "        " + morse_done.substr(80, 80) + ">";
+        dis[4][0] = "        " + morse_done.substr(160, morse_done.length());
+    }
+    else if (morse_done.length() > 240 && morse_done.length() <= 320)
+    {
+        dis[2][0] = "        " + morse_done.substr(0, 80) + ">";
+        dis[3][0] = "        " + morse_done.substr(80, 80) + ">";
+        dis[4][0] = "        " + morse_done.substr(160, 80) + ">";
+        dis[5][0] = "        " + morse_done.substr(240, morse_done.length());
+    }
+    else if (morse_done.length() > 320)
+    {
+        dis[2][0] = "        " + morse_done.substr(0, 80) + ">";
+        dis[3][0] = "        " + morse_done.substr(80, 80) + ">";
+        dis[4][0] = "        " + morse_done.substr(160, 80) + ">";
+        dis[5][0] = "        " + morse_done.substr(240, 80) + ">";
+        dis[6][0] = "        " + morse_done.substr(320, morse_done.length());
+    }
+    else
+    {
+        dis[2][0] = "  " + morse_done;
+    }
+    dis[15][0] = "   Type \"p\" or \"P\" to play the morse code";
+    dis[17][0] = "   Type \"b\" or \"B\" to Back to list Morse Code";
+}
+void dis_draw_list_manu()
+{
+    int count_list = 0;
+    while (list[count_list][0] != "")
+    {
+        count_list++;
+    }
+    int com = 0;
+    int end = position * 20;
+    for (int start = (position * 20) - 20; start < end; start++)
+    {
+        if(list[start][0] != "")
+        {
+            dis[com][0] = to_string(start + 1) + "  " + list[start][0];
+        }
+        com++;
+    }
+    count_list = (count_list/20)+1;
+    dis[1][1] = "  List of Morse Code Page " + to_string(position) + " of " + to_string(count_list);
+    dis[8][1] = "  Type \"p\" or \"P\" and Number";
+    dis[9][1] = "                            Move to Page (Ex. p2)";
+    dis[11][1] = "  Type \"s\" or \"S\" and Number";
+    dis[12][1] = "                       Select Morse Code (Ex. s2)";
+    dis[14][1] = "  Type \"d\" or \"D\" and Number";
+    dis[15][1] = "                             Delete List (Ex. d2)";
+    dis[17][1] = "  Type \"b\" or \"B\"";
+    dis[18][1] = "                               Back to Main Manu";
+}
+void wirte_list_array(string input_text, string morse_done)
+{
+    int i = 0;
+    while (list[i][0] != "")
+    {
+        i++;
+    }
+    list[i][0] = input_text;
+    list[i][1] = morse_done;
+    file_writer();
+}
+void file_writer()
+{
+    ofstream file;
+    file.open("list.txt");
+    for (int i = 0; list[i][0] != ""; i++)
+    {
+        file << list[i][0] << endl;
+        file << list[i][1] << endl;
+    }
+    file.close();
+}
+void file_maker()
+{
+    ifstream ifile;
+    ifile.open("list.txt");
+    if (ifile.fail())
+    {
+        ofstream ofile;
+        ofile.open("list.txt");
+        ofile.close();
+    }
+    else
+    {
+        for (int i = 0; !ifile.eof(); i++)
+        {
+            getline(ifile, list[i][0]);
+            getline(ifile, list[i][1]);
+        }
+    }
+    ifile.close();
+}
+
 void cls_add_varible()
 {
     input_text = "";
     morse_done = "";
 }
-void dis_player_morse(string morse_done)
+void dis_player_morse(string morse_done, int control_command)
 {
-    for(int l = 7; l < 22 ; l++)
+    for (int l = 0; l <= morse_done.length(); l++)
     {
-    dis[l][1] = "   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   ";
+        dis[5][1] = "  " + morse_done.substr(l, 1);
+        Sleep(100);
+        if (morse_done[l] == '.')
+        {
+            dis[3][1] = "";
+            for (int l = 7; l < 22; l++)
+            {
+                dis[l][1] = "   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   ";
+            }
+            display(3);
+            Sleep(100);
+            Beep(641, 100);
+            dis[3][1] = "";
+            for (int l = 7; l < 22; l++)
+            {
+                dis[l][1] = "";
+            }
+            display(3);
+            Sleep(10);
+        }
+        else if (morse_done[l] == '-')
+        {
+            dis[3][1] = "";
+            for (int l = 7; l < 22; l++)
+            {
+                dis[l][1] = "   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   ";
+            }
+            display(3);
+            Sleep(240);
+            Beep(651, 250);
+            dis[3][1] = "";
+            for (int l = 7; l < 22; l++)
+            {
+                dis[l][1] = "";
+            }
+            display(3);
+            Sleep(10);
+        }
+        else
+        {
+            Sleep(10);
+        }
+        dis[3][1] = "";
+        for (int l = 7; l < 22; l++)
+        {
+            dis[l][1] = "";
+        }
     }
+    display(control_command);
 }
 void dis_draw_add_confirm(string input_text, string morse_done)
 {
@@ -83,8 +249,8 @@ void dis_clear()
 }
 void dis_draw_main_manu()
 {
-    dis[0][0] = "1. add Text Convert to Morse Code";
-    dis[1][0] = "2. list all Text Convert to Morse Code";
+    dis[0][0] = "1. Add Text Convert to Morse Code";
+    dis[1][0] = "2. List all Text Convert to Morse Code";
     dis[2][0] = "3. Exit";
 }
 void display(int control)
@@ -93,8 +259,8 @@ void display(int control)
         dis_draw_main_manu();
     else if (control == 2)
         dis_draw_add_manu();
-    else if (control == 3)
-        ;
+    else if (control == 4)
+        dis_draw_list_manu();
 #ifdef _WIN32
     system("cls");
 #else
@@ -151,8 +317,20 @@ void input(int control_input)
             if (choice > 0 && choice < 4)
             {
                 input_main_manu = false;
-                dis_clear();
-                display(2);
+                if (choice == 1)
+                {
+                    dis_clear();
+                    display(2);
+                }
+                else if (choice == 2)
+                {
+                    dis_clear();
+                    display(4);
+                }
+                else if (choice == 3)
+                {
+                    exit(0);
+                }
             }
             else
             {
@@ -205,6 +383,100 @@ void input(int control_input)
             input(100);
         }
     }
+    if (control_input == 4)
+    {
+        bool input_list_manu = true;
+        while (input_list_manu)
+        {
+            string choice;
+            cout << "Command : ";
+            cin >> choice;
+            if (choice[0] == 'd' || choice[0] == 'D')
+            {
+                input_list_manu = false;
+                int rm_position = std::stoi(choice.substr(1, choice.length()));
+                for (int l = rm_position - 1; l < 1000; l++)
+                {
+                    list[l][0] = list[l + 1][0];
+                    list[l][1] = list[l + 1][1];
+                    list[l][2] = list[l + 1][2];
+                }
+                file_writer();
+                dis_clear();
+                display(4);
+            }
+            else if (choice[0] == 'p' || choice[0] == 'P')
+            {
+                input_list_manu = false;
+                position = std::stoi(choice.substr(1, choice.length()));
+                dis_clear();
+                display(4);
+            }
+            else if (choice[0] == 's' || choice[0] == 'S')
+            {
+                input_list_manu = false;
+                int select_position = std::stoi(choice.substr(1, choice.length()));
+                morse_done = list[select_position - 1][1];
+                input_text = list[select_position - 1][0];
+                dis_clear();
+                dis_draw_select();
+                display(110);
+            }
+            else if (choice[0] == 'b' || choice[0] == 'B')
+            {
+                input_list_manu = false;
+                dis_clear();
+                display(1);
+            }
+            else
+            {
+                cout << "Please enter command again is Worng" << endl;
+                cout << "Press Enter to continue...";
+                cin.get();
+                dis_clear();
+                display(4);
+            }
+        }
+    }
+    if (control_input == 110)
+    {
+        bool input_select_manu = true;
+        while (input_select_manu)
+        {
+            char command_select_manu;
+            cout << "Command : ";
+            cin >> command_select_manu;
+            if (command_select_manu == 'p' || command_select_manu == 'P' ||  command_select_manu == 'b' || command_select_manu == 'B')
+            {
+                input_select_manu = false;
+                if (command_select_manu == 'p' || command_select_manu == 'P')
+                {
+                    dis_player_morse(morse_done, 110);
+                    display(3);
+                }
+                else if (command_select_manu == 'b' || command_select_manu == 'B')
+                {
+                    cout << "Back Manu" << endl;
+                    cin.ignore();
+                    cout << "Press Enter to continue...";
+                    cin.get();
+                    dis_clear();
+                    cls_add_varible();
+                    display(4);
+                }
+            }
+            else
+            {
+                cout << "Please enter command \"p\" or \"P\" or \"b\" or \"B\"" << endl;
+                cin.ignore();
+                cout << "Press Enter to continue...";
+                cin.get();
+                dis_clear();
+                dis_draw_select();
+                display(110);
+            }
+        }
+    }
     if (control_input == 100)
     {
         bool input_add_manu = true;
@@ -218,22 +490,30 @@ void input(int control_input)
                 input_add_manu = false;
                 if (command_add_manu == 'p' || command_add_manu == 'P')
                 {
-                    dis_player_morse(morse_done);
+                    dis_player_morse(morse_done, 100);
                     display(3);
                 }
                 else if (command_add_manu == 'y' || command_add_manu == 'Y')
                 {
+                    wirte_list_array(input_text, morse_done);
+                    cout << "Add Complete" << endl;
+                    cin.ignore();
+                    cout << "Press Enter to continue...";
+                    cin.get();
                     dis_clear();
-                    display(1);
                     cls_add_varible();
+                    display(1);
                 }
                 else if (command_add_manu == 'n' || command_add_manu == 'N')
                 {
+                    cout << "Add Cancel" << endl;
+                    cin.ignore();
+                    cout << "Press Enter to continue...";
+                    cin.get();
                     dis_clear();
-                    display(1);
                     cls_add_varible();
+                    display(1);
                 }
-                // here
             }
             else
             {
